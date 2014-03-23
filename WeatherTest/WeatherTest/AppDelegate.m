@@ -7,15 +7,16 @@
 //
 
 #import "AppDelegate.h"
+#import "WeatherRequest.h"
+#import "WeatherData.h"
+
+#define MINUTES_TO_WAIT 1
+
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
-    self.window.backgroundColor = [UIColor whiteColor];
-    [self.window makeKeyAndVisible];
     return YES;
 }
 
@@ -29,6 +30,8 @@
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    [[GPSTracker sharedInstance] becomeDelegate:self];
+    [[GPSTracker sharedInstance] startTracking:MINUTES_TO_WAIT];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -45,5 +48,46 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+
+-(void)gpsLocationUpdate:(CLLocation *)loc {
+    [[GPSTracker sharedInstance] stopTracking];
+    [[GPSTracker sharedInstance] removeDelegate:self];
+    
+    [[WeatherRequest sharedInstance] requestWeather:loc sucess:^{
+        [self createLocalNotification];
+
+    } failure: ^{
+        NSLog(@"Failure");
+    }];
+}
+
+-(void) createLocalNotification
+{
+    UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+    
+    localNotification.fireDate = [[NSDate date] dateByAddingTimeInterval:1];
+    //    NSLog(@"Notification will be shown on: %@",localNotification.fireDate);
+    
+    NSString *s = nil;
+    
+    s = [NSString stringWithFormat:@"Code = %d, HighTemp = %d", [[WeatherData sharedInstance] getTodaysCode],
+         [[WeatherData sharedInstance] getTodaysHighTemp]];
+    
+    localNotification.timeZone = [NSTimeZone defaultTimeZone];
+    localNotification.alertBody = s;
+    
+    localNotification.alertAction = NSLocalizedString(@"View details", nil);
+    
+    /* Here we set notification sound and badge on the app's icon "-1"
+     means that number indicator on the badge will be decreased by one
+     - so there will be no badge on the icon */
+    
+//    localNotification.soundName = @"church_bells.wav";
+    localNotification.applicationIconBadgeNumber = -1;
+    
+    [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+}
+
+
 
 @end

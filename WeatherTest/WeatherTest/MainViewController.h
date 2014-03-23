@@ -1,5 +1,5 @@
 //
-//  AppDelegate.h
+//  MainViewController.h
 //  WeatherTest
 //
 //  Created by Phillip Sommerfeld on 3/22/14.
@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "GPSTracker.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, GPSDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
+@interface MainViewController : UIViewController <GPSDelegate>
 
 @end
