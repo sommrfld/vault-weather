@@ -10,7 +10,7 @@
 #import "WeatherRequest.h"
 #import "WeatherData.h"
 
-#define MINUTES_TO_WAIT 1
+#define MINUTES_TO_WAIT 15
 
 
 @implementation AppDelegate
